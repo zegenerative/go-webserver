@@ -1,0 +1,16 @@
+version: "3"
+services:
+  db:
+    image: postgres:12-alpine
+    volumes:
+      - ./src/db/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - db_data:/var/lib/postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=bookstore
+    ports:
+      - 5432:5432
+
+volumes:
+  db_data:
