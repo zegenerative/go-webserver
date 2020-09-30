@@ -118,11 +118,27 @@ func updatePrice(res http.ResponseWriter, req *http.Request) {
 	
 	book := Book{}
 	book.Isbn, _ = strconv.Atoi(key)
-	fmt.Println(book.Isbn)
 	f64, _ := strconv.ParseFloat(req.FormValue("Price"), 32)
 	book.Price = float32(f64)
 	updatePrice := `UPDATE books SET PRICE = $1 WHERE Isbn = $2`
 	_, err := db.Exec(updatePrice, book.Price, book.Isbn)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func deleteBook(res http.ResponseWriter, req *http.Request) {
+	if req.Method != "DELETE" {
+		http.Error(res, http.StatusText(400), 400)
+	}
+	if req.FormValue("Isbn") == "" {
+		http.Error(res, "Invalid ISBN", 400)
+	}
+
+	book := Book{}
+	book.Isbn, _ = strconv.Atoi(req.FormValue("Isbn"))
+	deleteBook := `DELETE FROM books WHERE Isbn = $1`
+	_, err := db.Exec(deleteBook, book.Isbn)
 	if err != nil {
 		panic(err)
 	}
@@ -133,5 +149,6 @@ func main() {
 	http.HandleFunc("/book", postBook)
 	http.HandleFunc("/books", getBooks)
 	http.HandleFunc("/book/price", updatePrice)
+	http.HandleFunc("/book/delete", deleteBook)
 	http.ListenAndServe(":8080", nil)
 }
